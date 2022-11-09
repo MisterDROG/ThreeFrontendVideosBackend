@@ -1,5 +1,7 @@
 const puppeteer = require("puppeteer");
 const PostsModel = require("../models/post");
+const addNewChannel = require("./channelToDb");
+const findAmountInString = require("../utils/amountFinder");
 const url = require("url");
 
 // function for getting current list of alredy added posts from Mongo database
@@ -8,70 +10,10 @@ async function getPostsFromDb() {
   return posts;
 }
 
-// function for deleting all all alredy added posts from Mongo database (uses only when it needs)
+// function for deleting all alredy added posts from Mongo database (uses only when it needs)
 async function deletePostsFromDb() {
   await PostsModel.deleteMany({ rate: { $gt: 0 } });
-}
-
-//old version of function for finding amount in string type "7,22&nbsp;тыс. просмотров" (in future will be deleted)
-// function findAmountInString(stringWithAmount) {
-//   const nbsp = String.fromCharCode(160);
-//   const splitStr = stringWithAmount.split(nbsp);
-//   let amount = 0;
-
-//   if (splitStr[1] && splitStr[1].includes("млн")) {
-//     amount = Number(splitStr[0].replace(",", ".")) * 1000000;
-//   } else if (splitStr[1] && splitStr[1].includes("тыс")) {
-//     amount = Number(splitStr[0].replace(",", ".")) * 1000;
-//   } else {
-//     amount = Number(splitStr[0].replace(",", ".").split(" ")[0]);
-//   }
-
-//   return amount;
-// }
-
-function findAmountInString(stringWithAmount) {
-  const regExpNumb = /([0-9,]+)|тыс|млн|млрд/g;
-
-  console.log(
-    "in string ",
-    stringWithAmount,
-    "we got numb: ",
-    stringWithAmount.match(regExpNumb)
-  );
-
-  const splitStr = stringWithAmount.match(regExpNumb);
-
-  let amount = 0;
-  if (splitStr[1] && splitStr[1] == "млрд") {
-    amount = Number(splitStr[0].replace(",", ".")) * 1000000000;
-  } else if (splitStr[1] && splitStr[1] == "млн") {
-    amount = Number(splitStr[0].replace(",", ".")) * 1000000;
-  } else if (splitStr[1] && splitStr[1] == "тыс") {
-    amount = Number(splitStr[0].replace(",", ".")) * 1000;
-  } else {
-    amount = Number(splitStr[0].replace(",", ".").split(" ")[0]);
-  }
-
-  console.log("Got:", amount);
-
-  return amount;
-}
-
-// function for scrapping amount of subscriptons for chosen YouTube channel (now not in use)
-async function subsCounter(pagePuppeteer) {
-  const channelName = await pagePuppeteer.$eval("#text", (el) => el.innerText);
-  const subs = await pagePuppeteer.$eval(
-    "#subscriber-count",
-    (el) => el.innerText
-  );
-
-  let subsAmount = findAmountInString(subs);
-
-  console.log("Channel Name: ", channelName);
-  console.log("Subs amount: ", subsAmount);
-
-  return subsAmount;
+  console.log("TEST MODE: new posts deleted");
 }
 
 // function for setting rate (type: amountOfViews/averageAmountOfViewsInArray) to all videos in the array
@@ -127,9 +69,18 @@ async function videoCounter(pagePuppeteer, channelUrl, postsInDb) {
   const allCards = await pagePuppeteer.$$("#dismissible");
   console.log("Amount of videos: ", allCards.length);
 
-  // collecting array with video posts objects
+  // collecting array with video objects from 10 posts on the page with random start
   let findedPosts = [];
-  for (let i = 0; i < 10 && i < allCards.length; i++) {
+  let postsStart = 0;
+  if (allCards.length < 10) {
+    postsStart = 0;
+    console.log("Videos from: ", postsStart, "to: ", allCards.length);
+  } else {
+    postsStart = Math.floor(Math.random() * (allCards.length - 10));
+    console.log("Videos from: ", postsStart, "to: ", postsStart + 10);
+  }
+
+  for (let i = postsStart; i < postsStart + 10 && i < allCards.length; i++) {
     let videoName = await allCards[i].$eval(
       "#video-title",
       (el) => el.innerText
@@ -177,7 +128,7 @@ async function severalSitesScrapper(pagePuppeteer, channelUrls, postsInDb) {
 }
 
 // function for pushing sorted best videos into databse
-async function pushToDb(videos) {
+async function pushVideosToDb(videos) {
   for (const video of videos) {
     console.log(video);
     try {
@@ -202,16 +153,21 @@ async function startScrapper(channelUrls) {
   const browser = await puppeteer.launch();
   const pagePuppeteer = await browser.newPage();
 
+  //asks admin if he want to add new channels for scrapping to database
+  await addNewChannel(pagePuppeteer);
+
+  //scrapping automatically selected channels
+  console.log("Start scrapping...");
   const videosBestFromFound = await severalSitesScrapper(
     pagePuppeteer,
     channelUrls,
     postsInDb
   );
-
-  await pushToDb(videosBestFromFound);
+  await pushVideosToDb(videosBestFromFound);
 
   await browser.close();
 
+  //optional deleting of all added videos for testmode
   deletePostsFromDb();
 }
 

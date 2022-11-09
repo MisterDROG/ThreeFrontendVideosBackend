@@ -14,6 +14,7 @@ const channelsUrls = [
   "https://www.youtube.com/channel/UCGhWsgwqpA_HH1R9j-B04dw/videos",
   "https://www.youtube.com/c/JavascriptNinja/videos",
   "https://www.youtube.com/c/VladilenMinin/videos",
+  "https://www.youtube.com/channel/UCyHa5ihd_ta2esek59C9EMg/videos",
   // 'https://www.youtube.com/c/%D0%A4%D1%80%D0%BE%D0%BD%D1%82%D0%B5%D0%BD%D0%B4/videos',
   // 'https://www.youtube.com/c/FrontendChannel/videos',
   // 'https://www.youtube.com/c/YauhenKavalchuk/videos',
