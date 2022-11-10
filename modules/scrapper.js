@@ -1,12 +1,14 @@
 const puppeteer = require("puppeteer");
 const PostsModel = require("../models/post");
+const ChannelsModel = require("../models/channel.js");
 const addNewChannel = require("./channelToDb");
 const findAmountInString = require("../utils/amountFinder");
 const url = require("url");
+const { resolve } = require("path");
 
 // function for getting current list of alredy added posts from Mongo database
 async function getPostsFromDb() {
-  const posts = await PostsModel.find({});
+  const posts = await PostsModel.find({}).populate("channel");
   return posts;
 }
 
@@ -14,6 +16,20 @@ async function getPostsFromDb() {
 async function deletePostsFromDb() {
   await PostsModel.deleteMany({ rate: { $gt: 0 } });
   console.log("TEST MODE: new posts deleted");
+}
+
+// function for getting n random channels for scrapping from channel database
+async function getChannelsFromDb() {
+  const allChannels = await ChannelsModel.find({});
+  let selectedChannels = [];
+  for (let i = 0; i < 5; i++) {
+    const randomChannel = allChannels.splice(
+      Math.floor(Math.random() * allChannels.length),
+      1
+    )[0];
+    selectedChannels.push(randomChannel);
+  }
+  return selectedChannels;
 }
 
 // function for setting rate (type: amountOfViews/averageAmountOfViewsInArray) to all videos in the array
@@ -37,6 +53,7 @@ function findBestVideoOnChannel(arrayWithPosts, postsInDb) {
     youTubeLink: "",
     embedLink: "",
     rate: 0,
+    channel: "",
     date: new Date().toLocaleDateString(),
   };
 
@@ -52,6 +69,7 @@ function findBestVideoOnChannel(arrayWithPosts, postsInDb) {
         "https://www.youtube.com/embed/" +
         url.parse(post.youTubeLink, true).query.v;
       bestVideoOnChannel.rate = post.rate;
+      bestVideoOnChannel.channel = post.channel;
     }
   });
 
@@ -59,7 +77,12 @@ function findBestVideoOnChannel(arrayWithPosts, postsInDb) {
 }
 
 // function for scrapping and finding best video from one channel
-async function videoCounter(pagePuppeteer, channelUrl, postsInDb) {
+async function videoCounter(
+  pagePuppeteer,
+  channelUrl,
+  channelUrlID,
+  postsInDb
+) {
   await pagePuppeteer.goto(channelUrl);
 
   //waiting for page load to needed selector (1s works ok, if not - increase, until scrapper stops adding to database empty objects)
@@ -100,6 +123,7 @@ async function videoCounter(pagePuppeteer, channelUrl, postsInDb) {
       title: videoName,
       viewsAmpount: viewsAmpount,
       youTubeLink: videolink,
+      channel: channelUrlID,
     });
   }
 
@@ -111,13 +135,19 @@ async function videoCounter(pagePuppeteer, channelUrl, postsInDb) {
 async function severalSitesScrapper(pagePuppeteer, channelUrls, postsInDb) {
   let allbestVideos = [];
   for (const channelUrl of channelUrls) {
-    console.log("Current scrapping channel: ", channelUrl);
+    console.log("\nCurrent scrapping channel: ", channelUrl.name);
+    console.log("Subscribers:", Number(channelUrl.subscribers));
     try {
-      let video = await videoCounter(pagePuppeteer, channelUrl, postsInDb);
+      let video = await videoCounter(
+        pagePuppeteer,
+        channelUrl.link,
+        channelUrl._id,
+        postsInDb
+      );
       allbestVideos.push(video);
-      console.log("DONE: ", channelUrl);
+      console.log("DONE: ", channelUrl.name);
     } catch (err) {
-      console.log(channelUrl, "- failed. Error: ", err);
+      console.log(channelUrl.name, "- failed. Error: ", err);
     }
   }
 
@@ -129,8 +159,9 @@ async function severalSitesScrapper(pagePuppeteer, channelUrls, postsInDb) {
 
 // function for pushing sorted best videos into databse
 async function pushVideosToDb(videos) {
+  console.log("\nBest videos to be pushed to database: ");
   for (const video of videos) {
-    console.log(video);
+    console.log("\n", video);
     try {
       await PostsModel.create({
         title: video.title,
@@ -139,6 +170,7 @@ async function pushVideosToDb(videos) {
         embedLink: video.embedLink,
         rate: video.rate,
         date: video.date,
+        channel: video.channel,
       });
       console.log("Video ", video.title, " - added to DB");
     } catch (err) {
@@ -148,7 +180,7 @@ async function pushVideosToDb(videos) {
 }
 
 //main function of the module for scrapping (with puppeteer lib)
-async function startScrapper(channelUrls) {
+async function startScrapper() {
   const postsInDb = await getPostsFromDb();
   const browser = await puppeteer.launch();
   const pagePuppeteer = await browser.newPage();
@@ -157,7 +189,9 @@ async function startScrapper(channelUrls) {
   await addNewChannel(pagePuppeteer);
 
   //scrapping automatically selected channels
-  console.log("Start scrapping...");
+  const channelUrls = await getChannelsFromDb();
+  console.log("\nChannels to be scrapped: ", channelUrls);
+  console.log("\nStart scrapping...");
   const videosBestFromFound = await severalSitesScrapper(
     pagePuppeteer,
     channelUrls,

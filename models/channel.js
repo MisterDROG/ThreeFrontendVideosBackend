@@ -6,6 +6,7 @@ const channelSchema = new mongoose.Schema({
   },
   link: {
     type: String,
+    unique: true,
   },
   subscribers: {
     type: String,

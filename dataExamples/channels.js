@@ -1,10 +1,4 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const startScrapper = require("./modules/scrapper.js");
-const router = require("./routes/getData.js");
-
-const { PORT = 4000 } = process.env;
-
+//example of channels database (uses only for testing)
 const channelsUrls = [
   "https://www.youtube.com/c/UlbiTV/videos",
   "https://www.youtube.com/c/SuprunAlexey/videos",
@@ -22,19 +16,3 @@ const channelsUrls = [
   "https://www.youtube.com/c/REDGroup/videos",
   "https://www.youtube.com/c/Degreet/videos",
 ];
-
-//connecting to Mongo database
-mongoose.connect("mongodb://localhost:27017/tfvdb", {
-  useNewUrlParser: true,
-});
-
-//starting scrapper to find n best videos from YouTube channels and loading them to Mongo database
-startScrapper();
-
-//express server for frontend requests
-const app = express();
-app.use("/", router);
-
-app.listen(PORT, () => {
-  console.log(`App listening on port ${PORT}\n`);
-});

@@ -20,6 +20,10 @@ const postsSchema = new mongoose.Schema({
   rate: {
     type: Number,
   },
+  channel: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "channel",
+  },
 });
 
 module.exports = mongoose.model("post", postsSchema);
