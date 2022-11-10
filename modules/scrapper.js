@@ -1,10 +1,10 @@
+const config = require("../projectConfigs/configForProject");
 const puppeteer = require("puppeteer");
 const PostsModel = require("../models/post");
 const ChannelsModel = require("../models/channel.js");
 const addNewChannel = require("./channelToDb");
 const findAmountInString = require("../utils/amountFinder");
 const url = require("url");
-const { resolve } = require("path");
 
 // function for getting current list of alredy added posts from Mongo database
 async function getPostsFromDb() {
@@ -22,7 +22,11 @@ async function deletePostsFromDb() {
 async function getChannelsFromDb() {
   const allChannels = await ChannelsModel.find({});
   let selectedChannels = [];
-  for (let i = 0; i < 5; i++) {
+  for (
+    let i = 0;
+    i < config.scrappingParametrs.amountOfScrappingChannels;
+    i++
+  ) {
     const randomChannel = allChannels.splice(
       Math.floor(Math.random() * allChannels.length),
       1
@@ -86,24 +90,42 @@ async function videoCounter(
   await pagePuppeteer.goto(channelUrl);
 
   //waiting for page load to needed selector (1s works ok, if not - increase, until scrapper stops adding to database empty objects)
-  await pagePuppeteer.waitForTimeout(1000);
+  await pagePuppeteer.waitForTimeout(
+    config.scrappingParametrs.delayForPageLoading
+  );
 
   //finding all opened cards with videos
   const allCards = await pagePuppeteer.$$("#dismissible");
   console.log("Amount of videos: ", allCards.length);
 
-  // collecting array with video objects from 10 posts on the page with random start
+  // collecting array with video objects from n posts on the page with random start
   let findedPosts = [];
   let postsStart = 0;
-  if (allCards.length < 10) {
+  if (
+    allCards.length < config.scrappingParametrs.amountOfVideosToScrapOnChannel
+  ) {
     postsStart = 0;
     console.log("Videos from: ", postsStart, "to: ", allCards.length);
   } else {
-    postsStart = Math.floor(Math.random() * (allCards.length - 10));
-    console.log("Videos from: ", postsStart, "to: ", postsStart + 10);
+    postsStart = Math.floor(
+      Math.random() *
+        (allCards.length -
+          config.scrappingParametrs.amountOfVideosToScrapOnChannel)
+    );
+    console.log(
+      "Videos from: ",
+      postsStart,
+      "to: ",
+      postsStart + config.scrappingParametrs.amountOfVideosToScrapOnChannel
+    );
   }
 
-  for (let i = postsStart; i < postsStart + 10 && i < allCards.length; i++) {
+  for (
+    let i = postsStart;
+    i < postsStart + config.scrappingParametrs.amountOfVideosToScrapOnChannel &&
+    i < allCards.length;
+    i++
+  ) {
     let videoName = await allCards[i].$eval(
       "#video-title",
       (el) => el.innerText
@@ -153,7 +175,7 @@ async function severalSitesScrapper(pagePuppeteer, channelUrls, postsInDb) {
 
   const removed = allbestVideos
     .sort((a, b) => (a.rate < b.rate ? 1 : -1))
-    .splice(3);
+    .splice(config.scrappingParametrs.amountOfBestVideos);
   return allbestVideos;
 }
 
@@ -186,7 +208,9 @@ async function startScrapper() {
   const pagePuppeteer = await browser.newPage();
 
   //asks admin if he want to add new channels for scrapping to database
-  await addNewChannel(pagePuppeteer);
+  if (config.scrappingParametrs.addNewChannelsMode == true) {
+    await addNewChannel(pagePuppeteer);
+  }
 
   //scrapping automatically selected channels
   const channelUrls = await getChannelsFromDb();
@@ -202,7 +226,9 @@ async function startScrapper() {
   await browser.close();
 
   //optional deleting of all added videos for testmode
-  deletePostsFromDb();
+  if (config.testingParametrs.testPostDb == true) {
+    await deletePostsFromDb();
+  }
 }
 
 module.exports = startScrapper;

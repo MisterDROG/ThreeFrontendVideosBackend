@@ -1,3 +1,4 @@
+const config = require("../projectConfigs/configForProject");
 const ChannelsModel = require("../models/channel.js");
 const findAmountInString = require("../utils/amountFinder");
 const readline = require("readline");
@@ -35,7 +36,9 @@ async function scrapChannelData(pagePuppeteer, channelUrl) {
   await pagePuppeteer.goto(channelUrl);
 
   //waiting for page load to needed selector (1s works ok, if not - increase, until scrapper stops adding to database empty objects)
-  await pagePuppeteer.waitForTimeout(1000);
+  await pagePuppeteer.waitForTimeout(
+    config.scrappingParametrs.delayForPageLoading
+  );
 
   //finding all name and amount of subscribers of the channel
   const channelName = await pagePuppeteer.$eval("#text", (el) => el.innerText);
@@ -93,9 +96,10 @@ async function addNewChannel(pagePuppeteer) {
   } else {
     console.log("No channels to add");
   }
-
   // optional deleting of all added channels for testmode
-  // await deleteChannelFromDb();
+  if (config.testingParametrs.testChannelDb == true) {
+    await deleteChannelFromDb();
+  }
 }
 
 module.exports = addNewChannel;
