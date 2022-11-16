@@ -12,7 +12,9 @@ mongoose.connect("mongodb://localhost:27017/tfvdb", {
 });
 
 //starting scrapper to find n best videos from YouTube channels and loading them to Mongo database
-startScrapper();
+setInterval(startScrapper, config.scrappingParametrs.intervalForScrapping);
+
+// startScrapper();
 
 //express server for frontend requests
 const app = express();

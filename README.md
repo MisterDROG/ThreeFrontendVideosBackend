@@ -15,6 +15,7 @@ The following technologies were used for the project.
 - built-in Url module for working with links
 - Mongo database for data storage
 - Mongoose for database management and schemas
+- CORS check ok
 - Eslint for code control with Airbnb plugin
 
 Special attention was paid to the project structure (file structure, variable and function names, code modularity, comments in the code), so that later it would be easier to continue developing the project in a team with other developers.
@@ -29,3 +30,6 @@ The development of the product concept, architecture, writing the front-end and 
 
 Link to the Frontend part of the project:
 https://github.com/MisterDROG/Three-Frontend-Videos-React
+
+Video discription of the project:
+https://disk.yandex.ru/i/wS30-Safp4_N_w

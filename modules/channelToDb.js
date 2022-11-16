@@ -5,6 +5,7 @@ const readline = require("readline");
 
 //function for getting new channels from the console (using recursion)
 async function inputChannelUrlFromConsole() {
+  const finishOfAdding = false;
   const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout,
@@ -12,17 +13,53 @@ async function inputChannelUrlFromConsole() {
   });
 
   let answer = await new Promise((resolve, reject) => {
-    rl.question("Do you want to add new channel? [y/n]: ", (answer) => {
-      resolve(answer);
-    });
+    const signal = AbortSignal.timeout(
+      config.scrappingParametrs.intervalForAddChannelSkip
+    );
+
+    function abortInput() {
+      console.log("\n!Channel add question timed out!");
+      resolve("n");
+    }
+
+    signal.addEventListener("abort", abortInput, { once: true });
+
+    rl.question(
+      `Do you want to add new channel? (${
+        config.scrappingParametrs.intervalForAddChannelSkip / 1000
+      } sec to answer) [y/n]: `,
+      { signal },
+      (answer) => {
+        signal.removeEventListener("abort", abortInput, { once: true });
+        resolve(answer);
+      }
+    );
   });
 
   if (answer == "y") {
     let url = await new Promise((resolve, reject) => {
-      rl.question("Enter channel url: ", (url) => {
-        rl.close();
-        resolve(url);
-      });
+      const signal = AbortSignal.timeout(
+        config.scrappingParametrs.intervalForAddChannelSkip
+      );
+
+      function abortInput() {
+        console.log("\n!URL add question timed out!");
+        resolve(null);
+      }
+
+      signal.addEventListener("abort", abortInput, { once: true });
+
+      rl.question(
+        `Enter channel url (${
+          config.scrappingParametrs.intervalForAddChannelSkip / 1000
+        } sec to answer): `,
+        { signal },
+        (url) => {
+          signal.removeEventListener("abort", abortInput, { once: true });
+          rl.close();
+          resolve(url);
+        }
+      );
     });
     return [url, ...(await inputChannelUrlFromConsole())];
   } else {
@@ -83,14 +120,17 @@ async function deleteChannelFromDb() {
 //main function of the module for scrapping and adding a channel to the database
 async function addNewChannel(pagePuppeteer) {
   const channelUrls = await inputChannelUrlFromConsole();
+
   if (!(channelUrls.length == 0)) {
     console.log("channelUrls", channelUrls);
     for (const url of channelUrls) {
-      try {
-        const channelObj = await scrapChannelData(pagePuppeteer, url);
-        await putChanneltoDb(channelObj);
-      } catch (err) {
-        console.log("Error in channel scrapping: ", err);
+      if (!(url == null)) {
+        try {
+          const channelObj = await scrapChannelData(pagePuppeteer, url);
+          await putChanneltoDb(channelObj);
+        } catch (err) {
+          console.log("Error in channel scrapping: ", err);
+        }
       }
     }
   } else {
