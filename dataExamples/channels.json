@@ -1,0 +1,113 @@
+[{
+  "_id": {
+    "$oid": "6453ab70d43dd15dcb8c3b73"
+  },
+  "name": "Ulbi TV",
+  "link": "https://www.youtube.com/c/UlbiTV/videos",
+  "subscribers": "215000",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453acd646c845747504007f"
+  },
+  "name": "Sergey Dmitrievsky",
+  "link": "https://www.youtube.com/c/SergeyDmitrievskyit/videos",
+  "subscribers": "58800",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453aeeb54fbad64c0c457f2"
+  },
+  "name": "Max Roslow",
+  "link": "https://www.youtube.com/channel/UCkDC1K5iKz65BdENM4x7l5A/videos",
+  "subscribers": "3460",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b0650a47df87a43f1e54"
+  },
+  "name": "Code life",
+  "link": "https://www.youtube.com/channel/UCkTwHrk8cvCe80PJ7cgwFIQ/videos",
+  "subscribers": "576",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b0670a47df87a43f1e56"
+  },
+  "name": "Эмоциональный робот",
+  "link": "https://www.youtube.com/channel/UCGhWsgwqpA_HH1R9j-B04dw/videos",
+  "subscribers": "888",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b0680a47df87a43f1e58"
+  },
+  "name": "JavaScript.Ninja",
+  "link": "https://www.youtube.com/c/JavascriptNinja/videos",
+  "subscribers": "51600",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b177bc1632ff808f047b"
+  },
+  "name": "Сергей Тютчев",
+  "link": "https://www.youtube.com/channel/UCyHa5ihd_ta2esek59C9EMg/videos",
+  "subscribers": "1740",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b184bc1632ff808f047d"
+  },
+  "name": "Фронтенд",
+  "link": "https://www.youtube.com/c/%D0%A4%D1%80%D0%BE%D0%BD%D1%82%D0%B5%D0%BD%D0%B4/videos",
+  "subscribers": "51200",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b186bc1632ff808f047f"
+  },
+  "name": "Frontend Channel",
+  "link": "https://www.youtube.com/c/FrontendChannel/videos",
+  "subscribers": "10600",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b24faf1466c8409ba07e"
+  },
+  "name": "Sergey Nemchinskiy",
+  "link": "https://www.youtube.com/c/SergeyNemchinskiy/videos",
+  "subscribers": "344000",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b25baf1466c8409ba080"
+  },
+  "name": "RED Group",
+  "link": "https://www.youtube.com/c/REDGroup/videos",
+  "subscribers": "44300",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b25caf1466c8409ba082"
+  },
+  "name": "Degreet",
+  "link": "https://www.youtube.com/c/Degreet/videos",
+  "subscribers": "1740",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b32120c3b9da6a68ed0b"
+  },
+  "name": "Владилен Минин",
+  "link": "https://www.youtube.com/c/VladilenMinin/videos",
+  "subscribers": "282000",
+  "__v": 0
+},{
+  "_id": {
+    "$oid": "6453b32220c3b9da6a68ed0d"
+  },
+  "name": "webDev",
+  "link": "https://www.youtube.com/c/YauhenKavalchuk/videos",
+  "subscribers": "104000",
+  "__v": 0
+}]

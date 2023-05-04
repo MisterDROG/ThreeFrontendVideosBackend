@@ -6,7 +6,7 @@ const addNewChannel = require("./channelToDb");
 const findAmountInString = require("../utils/amountFinder");
 const url = require("url");
 
-// function for getting current list of alredy added posts from Mongo database
+// function for getting current list of already added posts from Mongo database
 async function getPostsFromDb() {
   const posts = await PostsModel.find({}).populate("channel");
   return posts;
@@ -131,7 +131,7 @@ async function videoCounter(
       (el) => el.innerText
     );
     let videoViews = await allCards[i].$eval(
-      `#metadata-line > span:nth-child(2)`,
+      `#metadata-line > span:nth-child(3)`,
       (el) => el.innerText
     );
     let videolink = await allCards[i].$eval(
